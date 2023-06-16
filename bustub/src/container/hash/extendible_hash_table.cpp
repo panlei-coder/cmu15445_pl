@@ -97,7 +97,7 @@ void ExtendibleHashTable<K, V>::Insert(const K &key, const V &value) {
   // 如果key存在那么直接进行更新
   std::shared_ptr<Bucket>& bucket = dir_[index];
   V val;
-  if(bucket->Find(key,val)){ // 如果插入成功说明要么key已经存在了，要么桶不是满的
+  if(bucket->Find(key,val)){ // 如果key存在，直接调用insert更新即可
     bucket->Insert(key,value);
     return;
   }
@@ -120,7 +120,7 @@ void ExtendibleHashTable<K, V>::Insert(const K &key, const V &value) {
     std::shared_ptr<ExtendibleHashTable<K, V>::Bucket> new_bucket_1 = std::make_shared<ExtendibleHashTable<K, V>::Bucket>(bucket_size_,local_depth + 1);
     int local_mask = 1 << local_depth; // 在桶没有拆分之前比较的是后local_depth个比特位，现在后local_depth个比特位都是相同的，只需要比较倒数第local_depth+1的比特位就可以将桶拆分开来
     for(auto &[k,v] : dir_[index].get()->GetItems()){
-      if(static_cast<bool>(std::hash<K>()(k) & local_mask)){ // 如果倒数第local_depth个比特位是1，就添加到桶1中
+      if(static_cast<bool>(std::hash<K>()(k) & local_mask)){ // 如果倒数第local_depth个比特位是1，就添加到桶1中（std::hash<K>()(k)的第一个括号为调用hash函数的()运算符，后一个括号为传递参数）
         new_bucket_1->Insert(k,v);
       }else{                              // 如果倒数第local_depth个比特位是0，就添加到桶0中
         new_bucket_0->Insert(k,v);
